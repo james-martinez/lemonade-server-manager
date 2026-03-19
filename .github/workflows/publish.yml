@@ -24,6 +24,7 @@ jobs:
           CLAWHUB_AUTH: ${{ secrets.CLAWHUB_AUTH }}
         run: |
           VERSION=${GITHUB_REF_NAME#v}
+          clawhub login --token "$CLAWHUB_AUTH" --no-browser
           clawhub publish . \
             --slug lemonade-server-manager \
             --name "Lemonade Server Manager" \
