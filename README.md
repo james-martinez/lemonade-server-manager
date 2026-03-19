@@ -8,6 +8,7 @@ This skill enables your OpenClaw or NullClaw AI agent to securely orchestrate, m
 - **Zero Command Injection**: All HTTP logic is abstracted into a secure `manager.py` script, preventing malicious prompt injections from executing arbitrary bash commands on your host system.
 - **Hardware Awareness**: Allows the agent to query system info, monitor NPU/GPU constraints, and intelligently load/unload models to free up VRAM.
 - **Multimodal Ready**: Full support for text completion, chat workflows, and stable-diffusion image generation.
+- **SSL Flexibility**: Optional `--no-verify-ssl` flag for servers with self-signed certificates (e.g., IP addresses).
 
 ## Installation
 
@@ -68,3 +69,10 @@ Once installed, ask your OpenClaw or NullClaw agent to perform server tasks:
 - *"What models are currently loaded on my local Lemonade server?"*
 - *"Check the system health on http://192.168.1.50:8000. If there's enough VRAM, download and load the Llama 3 model."*
 - *"Unload the active LLM to free up the NPU."*
+
+## SSL Certificate Issues
+
+If connecting to a server with a self-signed certificate (e.g., IP addresses), use the `--no-verify-ssl` flag:
+```bash
+python3 manager.py health --url "https://192.168.1.225:11434" --no-verify-ssl
+```
