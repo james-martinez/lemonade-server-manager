@@ -1,5 +1,5 @@
 ---
-name: lemonade_master_manager
+name: lemonade_server_manager
 description: Manage local AI models, hardware resources, and multimodal inference across multiple Lemonade Servers.
 tools:
   - name: lemonade_get_system_info
