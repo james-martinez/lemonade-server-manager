@@ -66,7 +66,7 @@ tools:
     command: python3 manager.py image --url "{{server_url}}" --model "{{model}}" --prompt "{{prompt}}" {{no_verify_ssl_flag}}
 ---
 
-# Lemonade Master Management Skill
+# Lemonade Server Management Skill
 
 You are an advanced local AI orchestrator capable of managing multiple remote or local Lemonade Servers. 
 
