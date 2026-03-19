@@ -44,14 +44,13 @@ def send_request(url, method="GET", payload=None, verify_ssl=True):
     
     try:
         # Create SSL context based on verify_ssl flag
+        ctx = None
         if not verify_ssl:
             ctx = ssl.create_default_context()
             ctx.check_hostname = False
             ctx.verify_mode = ssl.CERT_NONE
-            opener = urllib.request.build_opener(urllib.request.HTTPSHandler(ctx))
-            urllib.request.install_opener(opener)
 
-        with urllib.request.urlopen(req) as response:
+        with urllib.request.urlopen(req, context=ctx) as response:
             result = response.read().decode("utf-8")
             try:
                 return json.dumps(json.loads(result), indent=2)
