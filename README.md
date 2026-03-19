@@ -1,4 +1,4 @@
-# Lemonade Server Manager for OpenClaw & NullClaw
+# Lemonade Server Manager for OpenClaw NullClaw, and the "Claw" family
 
 This skill enables your OpenClaw or NullClaw AI agent to securely orchestrate, manage, and interact with local and remote Lemonade Server instances. It acts as a comprehensive bridge for model lifecycle management, hardware monitoring, and multimodal inference.
 
@@ -22,8 +22,8 @@ clawhub install lemonade-server-manager
 Navigate to your workspace and clone the repository:
 ```bash
 cd ~/.openclaw/workspace/skills/
-git clone https://github.com/your-username/lemonade-manager.git
-cd lemonade-manager
+git clone https://github.com/james-martinez/lemonade-server-manager.git
+cd lemonade-server-manager
 ```
 
 > **Security Warning:** Always ensure your `.gitignore` contains `keys.json` before running any Git commands to prevent leaking your API keys.
