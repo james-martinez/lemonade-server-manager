@@ -3,6 +3,7 @@ import json
 import argparse
 import urllib.request
 import urllib.error
+import ssl
 import os
 from urllib.parse import urlparse
 
@@ -27,7 +28,7 @@ def get_api_key(target_url):
 
     return os.environ.get("LEMONADE_API_KEY")
 
-def send_request(url, method="GET", payload=None):
+def send_request(url, method="GET", payload=None, verify_ssl=True):
     """Helper to send HTTP requests with optional JSON payload and Auth headers."""
     headers = {"Content-Type": "application/json"}
     
@@ -42,7 +43,14 @@ def send_request(url, method="GET", payload=None):
     req = urllib.request.Request(url, data=data, headers=headers, method=method)
     
     try:
-        with urllib.request.urlopen(req) as response:
+        # Create SSL context based on verify_ssl flag
+        ctx = None
+        if not verify_ssl:
+            ctx = ssl.create_default_context()
+            ctx.check_hostname = False
+            ctx.verify_mode = ssl.CERT_NONE
+
+        with urllib.request.urlopen(req, context=ctx) as response:
             result = response.read().decode("utf-8")
             try:
                 return json.dumps(json.loads(result), indent=2)
@@ -63,21 +71,22 @@ def main():
     parser.add_argument("--model", help="Target model name or ID")
     parser.add_argument("--prompt", help="Text prompt for completions or images")
     parser.add_argument("--messages", help="JSON string of chat messages")
+    parser.add_argument("--no-verify-ssl", action="store_true", help="Disable SSL certificate verification (for IP addresses with self-signed certs)")
     
     args = parser.parse_args()
     base_url = args.url.rstrip("/")
 
     if args.action == "info":
-        print(send_request(f"{base_url}/api/v1/system-info"))
+        print(send_request(f"{base_url}/api/v1/system-info", verify_ssl=not args.no_verify_ssl))
     elif args.action == "health":
-        print(send_request(f"{base_url}/api/v1/health"))
+        print(send_request(f"{base_url}/api/v1/health", verify_ssl=not args.no_verify_ssl))
     elif args.action == "models":
-        print(send_request(f"{base_url}/api/v1/models"))
+        print(send_request(f"{base_url}/api/v1/models", verify_ssl=not args.no_verify_ssl))
     elif args.action in ["pull", "load", "unload"]:
         if not args.model:
             print("Error: --model is required.")
             sys.exit(1)
-        print(send_request(f"{base_url}/api/v1/{args.action}", method="POST", payload={"model": args.model}))
+        print(send_request(f"{base_url}/api/v1/{args.action}", method="POST", payload={"model": args.model}, verify_ssl=not args.no_verify_ssl))
     elif args.action == "chat":
         if not args.model or not args.messages:
             print("Error: --model and --messages are required.")
@@ -87,12 +96,12 @@ def main():
         except json.JSONDecodeError:
             print("Error: --messages must be valid JSON.")
             sys.exit(1)
-        print(send_request(f"{base_url}/api/v1/chat/completions", method="POST", payload={"model": args.model, "messages": messages_list}))
+        print(send_request(f"{base_url}/api/v1/chat/completions", method="POST", payload={"model": args.model, "messages": messages_list}, verify_ssl=not args.no_verify_ssl))
     elif args.action == "image":
         if not args.model or not args.prompt:
             print("Error: --model and --prompt are required.")
             sys.exit(1)
-        print(send_request(f"{base_url}/api/v1/images/generations", method="POST", payload={"model": args.model, "prompt": args.prompt}))
+        print(send_request(f"{base_url}/api/v1/images/generations", method="POST", payload={"model": args.model, "prompt": args.prompt}, verify_ssl=not args.no_verify_ssl))
 
 if __name__ == "__main__":
     main()
