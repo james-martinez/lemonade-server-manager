@@ -91,8 +91,13 @@ def main():
         if not args.model or not args.messages:
             print("Error: --model and --messages are required.")
             sys.exit(1)
+
+        messages_str = args.messages
+        if messages_str == "-":
+            messages_str = sys.stdin.read()
+
         try:
-            messages_list = json.loads(args.messages)
+            messages_list = json.loads(messages_str)
         except json.JSONDecodeError:
             print("Error: --messages must be valid JSON.")
             sys.exit(1)

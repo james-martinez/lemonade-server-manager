@@ -1,6 +1,10 @@
 ---
 name: lemonade_server_manager
-description: Manage local AI models, hardware resources, and multimodal inference across multiple Lemonade Servers.
+description: Manage local AI models, hardware resources, and multimodal inference across multiple Lemonade Servers. Note that credentials will be read from keys.json (if present) or the LEMONADE_API_KEY environment variable and transmitted to the target server_url.
+env:
+  - name: LEMONADE_API_KEY
+    description: Optional API key for authenticating with Lemonade servers.
+    required: false
 tools:
   - name: lemonade_get_system_info
     description: Get hardware information, device enumeration, and capabilities.
@@ -54,7 +58,10 @@ tools:
       model: string
       messages_json: string (Must be a strictly formatted JSON array of message objects)
       no_verify_ssl: boolean (optional, default: false)
-    command: python3 manager.py chat --url "{{server_url}}" --model "{{model}}" --messages '{{messages_json}}' {{no_verify_ssl_flag}}
+    command: |
+      cat << 'EOF_LEMONADE_MESSAGES_B3A1C9F2' | python3 manager.py chat --url "{{server_url}}" --model "{{model}}" --messages - {{no_verify_ssl_flag}}
+      {{messages_json}}
+      EOF_LEMONADE_MESSAGES_B3A1C9F2
 
   - name: lemonade_generate_image
     description: Generate an image using stable-diffusion.
