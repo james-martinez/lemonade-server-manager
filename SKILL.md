@@ -1,81 +1,150 @@
 ---
-name: lemonade_server_manager
-description: Manage local AI models, hardware resources, and multimodal inference across multiple Lemonade Servers. Note that credentials will be read from keys.json (if present) or the LEMONADE_API_KEY environment variable and transmitted to the target server_url.
+name: lemonade-server-manager
+description: Manage Lemonade Servers natively. Use when checking system info, health status, listing available models, pulling or loading new models, completing LLM chats, or generating stable-diffusion images on a local or remote AI NPU/GPU cluster.
+metadata: {"clawdbot":{"emoji":"🍋","requires":{"anyBins":["curl"]},"os":["linux","darwin","win32"]}}
 env:
   - name: LEMONADE_API_KEY
-    description: |
-      Optional API key for authenticating with Lemonade servers.
+    description: Optional API key for authenticating with Lemonade servers.
     required: false
 ---
 
-# Lemonade Server Management Skill
+# Lemonade Server Management
 
-You are an advanced local AI orchestrator capable of managing multiple remote or local Lemonade Servers. 
+Interact with and manage local or remote Lemonade AI Server hardware directly via standard native network requests (`curl`).
 
-### Core Directives
+## When to Use
 
-1. **Multi-Server Management:**
-   * Every tool requires a `server_url`.
-   * If the user does not specify a server URL, assume `http://localhost:8000`.
+- Checking local GPU/NPU health and currently loaded VRAM resources
+- Listing available, downloaded text/image models on a Lemonade cluster
+- Pulling, loading, or unloading multimodal models
+- Generating text from LLMs (chat completions)
+- Generating stable-diffusion image responses
 
-2. **Hardware & Resource Awareness:**
-   * Local models demand significant GPU/NPU resources. Before initiating any heavy load, use `lemonade_check_health` on the target server.
-   * **NPU Exclusivity Rule:** Certain backends (`flm`, `ryzenai-llm`, and `whispercpp`) are mutually exclusive on an NPU. Automatically use `lemonade_unload_model` on conflicting LLMs before loading a Whisper model.
+## Setup Instructions
 
-3. **Model Lifecycle Operations:**
-   * Use `lemonade_pull_model` to download models to the target server.
-   * Suggest using `lemonade_unload_model` to clear out idle models if a server runs out of VRAM.
+1. Every endpoint requires a base `server_url`. If one is not specified by the user, assume `http://localhost:8000`.
+2. Extract the appropriate API Key from the `keys.json` file if it exists in the skill directory for the target URL, otherwise use the `LEMONADE_API_KEY` environment variable.
+3. If connecting to a local IP or test server, you may encounter self-signed certificate errors. If so, append `--insecure` or `-k` to your `curl` requests.
 
-4. **Inference & Multimodal:**
-   * For standard chat, use `lemonade_chat_completion`. Ensure you format the conversation history as a valid JSON array of `[{"role": "...", "content": "..."}]`.
-   * If an API call fails due to hardware limitations (e.g., lack of VRAM), clearly communicate this and offer to unload inactive models.
-## Available API Endpoints
+## API Operations
 
-You can interact with Lemonade Servers by making standard HTTP requests (e.g., using `curl`) to the following endpoints.
-Be sure to pass the `Authorization: Bearer <token>` header if required by `keys.json` or `LEMONADE_API_KEY`.
-If a server has a self-signed cert, use the `--insecure` or `-k` flag in `curl`.
+### System Info
 
-### System Info (`/api/v1/system-info`)
-* **Method:** `GET`
-* **Description:** Get hardware information, device enumeration, and capabilities.
-* **Returns:** JSON object with hardware capabilities.
+Get hardware capabilities and device enumeration limits.
 
-### Health Check (`/api/v1/health`)
-* **Method:** `GET`
-* **Description:** Check server status and currently loaded models.
-* **Returns:** JSON object containing server status and currently loaded models.
+**Returns:** JSON object with hardware capabilities.
 
-### List Models (`/api/v1/models`)
-* **Method:** `GET`
-* **Description:** List all downloaded and available models on the target server.
-* **Returns:** JSON list of all downloaded and available models.
+```bash
+# Example Request
+curl -X GET "http://localhost:8000/api/v1/system-info" \
+  -H "Authorization: Bearer <token>"
+```
 
-### Pull Model (`/api/v1/pull`)
-* **Method:** `POST`
-* **Description:** Download and install a new model to the target server.
-* **JSON Body:** `{"model": "<model_name>"}`
-* **Returns:** JSON stream or object confirming download status.
+### Health Check
 
-### Load Model (`/api/v1/load`)
-* **Method:** `POST`
-* **Description:** Load a model into memory (GPU/NPU/RAM) on the target server.
-* **JSON Body:** `{"model": "<model_name>"}`
-* **Returns:** JSON object confirming model loaded into memory.
+Verify status and monitor currently loaded models to prevent VRAM overflow.
 
-### Unload Model (`/api/v1/unload`)
-* **Method:** `POST`
-* **Description:** Unload a model to free up memory/VRAM on the target server.
-* **JSON Body:** `{"model": "<model_name>"}`
-* **Returns:** JSON object confirming model unloaded.
+**Returns:** JSON object containing server status and currently loaded models.
 
-### Chat Completion (`/api/v1/chat/completions`)
-* **Method:** `POST`
-* **Description:** Send a chat completion request to an LLM.
-* **JSON Body:** `{"model": "<model_name>", "messages": [{"role": "user", "content": "..."}]}`
-* **Returns:** JSON object containing standard chat completion response.
+```bash
+# Example Request
+curl -X GET "http://localhost:8000/api/v1/health" \
+  -H "Authorization: Bearer <token>"
+```
 
-### Generate Image (`/api/v1/images/generations`)
-* **Method:** `POST`
-* **Description:** Generate an image using stable-diffusion.
-* **JSON Body:** `{"model": "<model_name>", "prompt": "<prompt>"}`
-* **Returns:** JSON object containing base64 generated image data.
+### List Models
+
+Get an array of downloaded models available to load into memory.
+
+**Returns:** JSON list of all downloaded and available models.
+
+```bash
+# Example Request
+curl -X GET "http://localhost:8000/api/v1/models" \
+  -H "Authorization: Bearer <token>"
+```
+
+### Pull Model
+
+Download and install a new model string to the target machine.
+
+**Returns:** JSON stream or object confirming download status.
+
+```bash
+# Example Request
+curl -X POST "http://localhost:8000/api/v1/pull" \
+  -H "Authorization: Bearer <token>" \
+  -H "Content-Type: application/json" \
+  -d '{"model": "llama3"}'
+```
+
+### Load Model
+
+Load a model into VRAM/NPU to prepare for prompt responses.
+
+**Returns:** JSON object confirming model loaded into memory.
+
+```bash
+# Example Request
+curl -X POST "http://localhost:8000/api/v1/load" \
+  -H "Authorization: Bearer <token>" \
+  -H "Content-Type: application/json" \
+  -d '{"model": "llama3"}'
+```
+
+### Unload Model
+
+Force unload a model to free up memory before loading a larger variant.
+
+**Returns:** JSON object confirming model unloaded.
+
+```bash
+# Example Request
+curl -X POST "http://localhost:8000/api/v1/unload" \
+  -H "Authorization: Bearer <token>" \
+  -H "Content-Type: application/json" \
+  -d '{"model": "llama3"}'
+```
+
+### Chat Completion
+
+Send a standard chat request to the LLM backend.
+
+**Returns:** JSON object containing standard chat completion response.
+
+```bash
+# Example Request
+curl -X POST "http://localhost:8000/api/v1/chat/completions" \
+  -H "Authorization: Bearer <token>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "llama3",
+    "messages": [
+      {"role": "user", "content": "Hello, world!"}
+    ]
+  }'
+```
+
+### Generate Image
+
+Submit a stable-diffusion prompt for image generation.
+
+**Returns:** JSON object containing base64 generated image data.
+
+```bash
+# Example Request
+curl -X POST "http://localhost:8000/api/v1/images/generations" \
+  -H "Authorization: Bearer <token>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "sdxl",
+    "prompt": "A majestic lion standing on a cliff, digital art"
+  }'
+```
+
+## Tips
+
+- The `flm`, `ryzenai-llm`, and `whispercpp` backends are mutually exclusive on an NPU. Always use the `/api/v1/unload` endpoint on conflicting LLMs before attempting to load a Whisper model on an NPU.
+- Check `/api/v1/health` first to assess available hardware VRAM before pulling or loading a multi-gigabyte LLM to avoid out-of-memory errors on the host.
+- Provide clear feedback to the user if an API request fails due to resource constraints and suggest unloading inactive background models.
+- If an SSL error is raised by `curl`, immediately attempt the exact same command with the `-k` or `--insecure` argument to bypass local self-signed cert blocks.
