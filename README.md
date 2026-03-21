@@ -8,7 +8,6 @@ This skill enables your OpenClaw or NullClaw AI agent to securely orchestrate, m
 - **Zero Command Injection**: All HTTP logic is abstracted into purely declarative markdown documentation in `SKILL.md`, instructing the agent to utilize standard native tools (`curl`) rather than executing malicious prompt injections.
 - **Hardware Awareness**: Allows the agent to query system info, monitor NPU/GPU constraints, and intelligently load/unload models to free up VRAM.
 - **Multimodal Ready**: Full support for text completion, chat workflows, and stable-diffusion image generation.
-- **SSL Flexibility**: Uses `--insecure` flags via curl for servers with self-signed certificates (e.g., IP addresses).
 
 ## Installation
 
@@ -58,8 +57,3 @@ Once installed, ask your OpenClaw or NullClaw agent to perform server tasks:
 - *"What models are currently loaded on my local Lemonade server?"*
 - *"Check the system health on http://192.168.1.50:8000. If there's enough VRAM, download and load the Llama 3 model."*
 - *"Unload the active LLM to free up the NPU."*
-
-## SSL Certificate Issues
-
-If connecting to a server with a self-signed certificate (e.g., IP addresses), instruct the agent to use the `--insecure` or `-k` flag:
-- *"Check the health of my lemonade server on https://192.168.1.225:11434, but use insecure curl since I have a self-signed cert."*
