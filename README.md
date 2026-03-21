@@ -1,14 +1,14 @@
 # Lemonade Server Manager for OpenClaw NullClaw, and the "Claw" family
 
-This skill enables your OpenClaw or NullClaw AI agent to securely orchestrate, manage, and interact with local and remote Lemonade Server instances. It acts as a comprehensive bridge for model lifecycle management, hardware monitoring, and multimodal inference.
+This skill enables your OpenClaw or NullClaw AI agent to securely orchestrate, manage, and interact with local and remote Lemonade Server instances. It acts as a comprehensive declarative bridge for model lifecycle management, hardware monitoring, and multimodal inference.
 
 ## Core Features
 
-- **Multi-Server Orchestration**: Dynamically route requests to different local or remote Lemonade Servers using the `--url` flag.
-- **Zero Command Injection**: All HTTP logic is abstracted into a secure `manager.py` script, preventing malicious prompt injections from executing arbitrary bash commands on your host system.
+- **Multi-Server Orchestration**: Dynamically route requests to different local or remote Lemonade Servers using the agent's built in tools.
+- **Zero Command Injection**: All HTTP logic is abstracted into purely declarative markdown documentation in `SKILL.md`, instructing the agent to utilize standard native tools (`curl`) rather than executing malicious prompt injections.
 - **Hardware Awareness**: Allows the agent to query system info, monitor NPU/GPU constraints, and intelligently load/unload models to free up VRAM.
 - **Multimodal Ready**: Full support for text completion, chat workflows, and stable-diffusion image generation.
-- **SSL Flexibility**: Optional `--no-verify-ssl` flag for servers with self-signed certificates (e.g., IP addresses).
+- **SSL Flexibility**: Uses `--insecure` flags via curl for servers with self-signed certificates (e.g., IP addresses).
 
 ## Installation
 
@@ -27,41 +27,30 @@ git clone https://github.com/james-martinez/lemonade-server-manager.git
 cd lemonade-server-manager
 ```
 
-> **Security Warning:** Always ensure your `.gitignore` contains `keys.json` before running any Git commands to prevent leaking your API keys.
-
 ## Authentication Configuration
 
-This skill supports two methods for authenticating with Lemonade Servers.
+This skill supports environment-based authentication for interacting with Lemonade Servers.
 
-### Single Server (Environment Variable)
-If you are only interacting with a single local or remote server, you do not need a configuration file. The skill will automatically look for the following environment variable on your host OS:
+### API Key (Environment Variable)
+To interact with a local or remote server securely, provide your API key via the following environment variable on your host OS:
 ```bash
 export LEMONADE_API_KEY="your-api-key-here"
 ```
 
-### Multi-Server (keys.json)
-If your agent needs to manage multiple remote servers that require different authentication keys, create a `keys.json` file in the root of the skill directory.
-```json
-{
-  "http://192.168.1.50:8000": "sk-remote-gpu-key",
-  "https://lemonade.my-domain.com": "sk-cloud-key",
-  "http://localhost:8000": ""
-}
-```
+## Available API Endpoints
 
-## Available Tools
+The agent has access to the following categorized endpoints, executing them natively via standard tools (e.g., `curl`):
 
-The agent has access to the following categorized endpoints via the `manager.py` wrapper script:
-
-| Tool Name | Description | Lemonade Endpoint |
+| Endpoint Name | Description | Lemonade Endpoint |
 | :--- | :--- | :--- |
-| `lemonade_get_system_info` | Retrieves hardware and device enumeration. | `/api/v1/system-info` |
-| `lemonade_check_health` | Checks server status and loaded models. | `/api/v1/health` |
-| `lemonade_pull_model` | Downloads a specified model to the server. | `/api/v1/pull` |
-| `lemonade_load_model` | Loads a model into GPU/NPU memory. | `/api/v1/load` |
-| `lemonade_unload_model` | Unloads a model to free up system VRAM. | `/api/v1/unload` |
-| `lemonade_chat_completion` | Executes standard LLM chat tasks. | `/api/v1/chat/completions` |
-| `lemonade_generate_image` | Creates images using stable-diffusion. | `/api/v1/images/generations` |
+| `System Info` | Retrieves hardware and device enumeration. | `/api/v1/system-info` |
+| `Health Check` | Checks server status and loaded models. | `/api/v1/health` |
+| `List Models` | Lists downloaded and available models. | `/api/v1/models` |
+| `Pull Model` | Downloads a specified model to the server. | `/api/v1/pull` |
+| `Load Model` | Loads a model into GPU/NPU memory. | `/api/v1/load` |
+| `Unload Model` | Unloads a model to free up system VRAM. | `/api/v1/unload` |
+| `Chat Completion` | Executes standard LLM chat tasks. | `/api/v1/chat/completions` |
+| `Generate Image` | Creates images using stable-diffusion. | `/api/v1/images/generations` |
 
 ## Usage Examples
 
@@ -72,7 +61,5 @@ Once installed, ask your OpenClaw or NullClaw agent to perform server tasks:
 
 ## SSL Certificate Issues
 
-If connecting to a server with a self-signed certificate (e.g., IP addresses), use the `--no-verify-ssl` flag:
-```bash
-python3 manager.py health --url "https://192.168.1.225:11434" --no-verify-ssl
-```
+If connecting to a server with a self-signed certificate (e.g., IP addresses), instruct the agent to use the `--insecure` or `-k` flag:
+- *"Check the health of my lemonade server on https://192.168.1.225:11434, but use insecure curl since I have a self-signed cert."*

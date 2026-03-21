@@ -1,5 +1,0 @@
-{
-  "http://192.168.1.50:8000": "sk-remote-gpu-key-12345",
-  "https://lemonade.my-domain.com": "sk-cloud-instance-key-67890",
-  "http://localhost:8000": ""
-}
