@@ -23,8 +23,7 @@ Interact with and manage local or remote Lemonade AI Server hardware directly vi
 ## Setup Instructions
 
 1. Every endpoint requires a base `server_url`. If one is not specified by the user, assume `http://localhost:8000`.
-2. Extract the appropriate API Key from the `keys.json` file if it exists in the skill directory for the target URL, otherwise use the `LEMONADE_API_KEY` environment variable.
-3. If connecting to a local IP or test server, you may encounter self-signed certificate errors. If so, append `--insecure` or `-k` to your `curl` requests.
+2. Use the `LEMONADE_API_KEY` environment variable to authenticate.
 
 ## API Operations
 
@@ -147,4 +146,3 @@ curl -X POST "http://localhost:8000/api/v1/images/generations" \
 - The `flm`, `ryzenai-llm`, and `whispercpp` backends are mutually exclusive on an NPU. Always use the `/api/v1/unload` endpoint on conflicting LLMs before attempting to load a Whisper model on an NPU.
 - Check `/api/v1/health` first to assess available hardware VRAM before pulling or loading a multi-gigabyte LLM to avoid out-of-memory errors on the host.
 - Provide clear feedback to the user if an API request fails due to resource constraints and suggest unloading inactive background models.
-- If an SSL error is raised by `curl`, immediately attempt the exact same command with the `-k` or `--insecure` argument to bypass local self-signed cert blocks.
