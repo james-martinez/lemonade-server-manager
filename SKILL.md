@@ -1,7 +1,7 @@
 ---
 name: lemonade-server-manager
 description: Manage Lemonade Servers natively. Use when checking system info, health status, listing available models, pulling or loading new models, completing LLM chats, or generating stable-diffusion images on a local or remote AI NPU/GPU cluster.
-metadata: {"clawdbot":{"emoji":"🍋","requires":{"anyBins":["curl"]},"os":["linux","darwin","win32"]}}
+metadata: {"homepage":"https://github.com/james-martinez/lemonade-server-manager","clawdbot":{"emoji":"🍋","requires":{"anyBins":["curl"]},"os":["linux","darwin","win32"]}}
 env:
   - name: LEMONADE_API_KEY
     description: Optional API key for authenticating with Lemonade servers.
@@ -24,6 +24,8 @@ Interact with and manage local or remote Lemonade AI Server hardware directly vi
 
 1. Every endpoint requires a base `server_url`. If one is not specified by the user, assume `http://localhost:8000`.
 2. Use the `LEMONADE_API_KEY` environment variable to authenticate.
+3. This skill stays focused on making HTTP requests to a base `server_url` (default `http://localhost:8000`) and using an optional `LEMONADE_API_KEY`. It does not instruct reading arbitrary host files or other env vars.
+4. **Operational note:** The skill will transmit prompts and model requests to whichever `server_url` is used. If a remote URL is supplied, the agent will send user content and model commands there (expected for this skill, but worth the user's attention).
 
 ## API Operations
 
@@ -36,7 +38,7 @@ Get hardware capabilities and device enumeration limits.
 ```bash
 # Example Request
 curl -X GET "http://localhost:8000/api/v1/system-info" \
-  -H "Authorization: Bearer <token>"
+  -H "Authorization: Bearer ${LEMONADE_API_KEY}"
 ```
 
 ### Health Check
@@ -48,7 +50,7 @@ Verify status and monitor currently loaded models to prevent VRAM overflow.
 ```bash
 # Example Request
 curl -X GET "http://localhost:8000/api/v1/health" \
-  -H "Authorization: Bearer <token>"
+  -H "Authorization: Bearer ${LEMONADE_API_KEY}"
 ```
 
 ### List Models
@@ -60,7 +62,7 @@ Get an array of downloaded models available to load into memory.
 ```bash
 # Example Request
 curl -X GET "http://localhost:8000/api/v1/models" \
-  -H "Authorization: Bearer <token>"
+  -H "Authorization: Bearer ${LEMONADE_API_KEY}"
 ```
 
 ### Pull Model
@@ -72,7 +74,7 @@ Download and install a new model string to the target machine.
 ```bash
 # Example Request
 curl -X POST "http://localhost:8000/api/v1/pull" \
-  -H "Authorization: Bearer <token>" \
+  -H "Authorization: Bearer ${LEMONADE_API_KEY}" \
   -H "Content-Type: application/json" \
   -d '{"model": "llama3"}'
 ```
@@ -86,7 +88,7 @@ Load a model into VRAM/NPU to prepare for prompt responses.
 ```bash
 # Example Request
 curl -X POST "http://localhost:8000/api/v1/load" \
-  -H "Authorization: Bearer <token>" \
+  -H "Authorization: Bearer ${LEMONADE_API_KEY}" \
   -H "Content-Type: application/json" \
   -d '{"model": "llama3"}'
 ```
@@ -100,7 +102,7 @@ Force unload a model to free up memory before loading a larger variant.
 ```bash
 # Example Request
 curl -X POST "http://localhost:8000/api/v1/unload" \
-  -H "Authorization: Bearer <token>" \
+  -H "Authorization: Bearer ${LEMONADE_API_KEY}" \
   -H "Content-Type: application/json" \
   -d '{"model": "llama3"}'
 ```
@@ -114,7 +116,7 @@ Send a standard chat request to the LLM backend.
 ```bash
 # Example Request
 curl -X POST "http://localhost:8000/api/v1/chat/completions" \
-  -H "Authorization: Bearer <token>" \
+  -H "Authorization: Bearer ${LEMONADE_API_KEY}" \
   -H "Content-Type: application/json" \
   -d '{
     "model": "llama3",
@@ -133,7 +135,7 @@ Submit a stable-diffusion prompt for image generation.
 ```bash
 # Example Request
 curl -X POST "http://localhost:8000/api/v1/images/generations" \
-  -H "Authorization: Bearer <token>" \
+  -H "Authorization: Bearer ${LEMONADE_API_KEY}" \
   -H "Content-Type: application/json" \
   -d '{
     "model": "sdxl",
