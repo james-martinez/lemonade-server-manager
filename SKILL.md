@@ -24,6 +24,8 @@ Interact with and manage local or remote Lemonade AI Server hardware directly vi
 
 1. Every endpoint requires a base `server_url`. If one is not specified by the user, assume `http://localhost:8000`.
 2. Use the `LEMONADE_API_KEY` environment variable to authenticate.
+3. This skill stays focused on making HTTP requests to a base `server_url` (default `http://localhost:8000`) and using an optional `LEMONADE_API_KEY`. It does not instruct reading arbitrary host files or other env vars.
+4. **Operational note:** The skill will transmit prompts and model requests to whichever `server_url` is used. If a remote URL is supplied, the agent will send user content and model commands there (expected for this skill, but worth the user's attention).
 
 ## API Operations
 
